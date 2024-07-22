@@ -1,7 +1,8 @@
+import argparse
 import cv2 as cv
 import mediapipe as mp
 import numpy as np
-import sys
+
 from utils import DLT, get_projection_matrix, write_keypoints_to_disk
 
 mp_drawing = mp.solutions.drawing_utils
@@ -139,16 +140,17 @@ def run_mp(input_stream1, input_stream2, P0, P1):
 
     return np.array(kpts_cam0), np.array(kpts_cam1), np.array(kpts_3d)
 
+
 if __name__ == '__main__':
 
-    #this will load the sample videos if no camera ID is given
-    input_stream1 = 'media/cam0_test.mp4'
-    input_stream2 = 'media/cam1_test.mp4'
+    parser = argparse.ArgumentParser(description='Description of your program')
+    parser.add_argument('input_stream1', type=str, default='media/cam0_test.mp4', nargs='?', help='Input stream 1')
+    parser.add_argument('input_stream2', type=str, default='media/cam1_test.mp4', nargs='?', help='Input stream 2')
+    
+    args = parser.parse_args()
 
-    #put camera id as command line arguements
-    if len(sys.argv) == 3:
-        input_stream1 = int(sys.argv[1])
-        input_stream2 = int(sys.argv[2])
+    input_stream1 = args.input_stream1
+    input_stream2 = args.input_stream2
 
     #get projection matrices
     P0 = get_projection_matrix(0)
