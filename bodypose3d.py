@@ -14,11 +14,19 @@ frame_shape = [720, 1280]
 #add here if you need more keypoints
 pose_keypoints = [16, 14, 12, 11, 13, 15, 24, 23, 25, 26, 27, 28]
 
-def run_mp(input_stream1, input_stream2, P0, P1):
+def run_mp(input_stream1, input_stream2, P0, P1, is_device:bool=True):
     #input video stream
-    cap0 = cv.VideoCapture(input_stream1)
-    cap1 = cv.VideoCapture(input_stream2)
+    if is_device:
+        input_stream1 = int(input_stream1)
+        input_stream2 = int(input_stream2)
+
+    cap0 = cv.VideoCapture(int(input_stream1))
+    cap1 = cv.VideoCapture(int(input_stream2))
     caps = [cap0, cap1]
+
+    for cap in caps:
+        if not cap.isOpened():
+            print(f"Couldn't read video stream from device {cap}")
 
     #set camera resolution if using webcam to 1280x720. Any bigger will cause some lag for hand detection
     for cap in caps:
@@ -132,11 +140,9 @@ def run_mp(input_stream1, input_stream2, P0, P1):
         k = cv.waitKey(1)
         if k & 0xFF == 27: break #27 is ESC key.
 
-
     cv.destroyAllWindows()
     for cap in caps:
         cap.release()
-
 
     return np.array(kpts_cam0), np.array(kpts_cam1), np.array(kpts_3d)
 
@@ -146,6 +152,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Description of your program')
     parser.add_argument('input_stream1', type=str, default='media/cam0_test.mp4', nargs='?', help='Input stream 1')
     parser.add_argument('input_stream2', type=str, default='media/cam1_test.mp4', nargs='?', help='Input stream 2')
+    parser.add_argument('--non-device', type=bool, default=False, nargs='?', help='Input stream 2')
+    parser.add_argument('--no-device', action='store_true', help="Specify if the inputs are device indices")
     
     args = parser.parse_args()
 
@@ -156,7 +164,7 @@ if __name__ == '__main__':
     P0 = get_projection_matrix(0)
     P1 = get_projection_matrix(1)
 
-    kpts_cam0, kpts_cam1, kpts_3d = run_mp(input_stream1, input_stream2, P0, P1)
+    kpts_cam0, kpts_cam1, kpts_3d = run_mp(input_stream1, input_stream2, P0, P1, not args.no_device)
 
     #this will create keypoints file in current working folder
     write_keypoints_to_disk('kpts_cam0.dat', kpts_cam0)
