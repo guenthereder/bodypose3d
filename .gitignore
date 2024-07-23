@@ -1,4 +1,4 @@
 .*
 __*
-camera_parameters
+camera_parameters/**
 *.dat
